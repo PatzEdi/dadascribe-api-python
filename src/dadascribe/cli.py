@@ -7,7 +7,7 @@ import json
 
 
 from .internal_globals import ENV_API_NAME
-from .main_api import transcribe, status_request
+from .wrapper import transcribe, status_request
 
 
 def _check_api_key_presence(args) -> str:
