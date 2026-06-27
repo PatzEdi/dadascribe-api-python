@@ -71,7 +71,7 @@ def _handle_args(args: argparse.Namespace, api_key: str) -> None:
         if args.status_id:
             # If a status ID is provided, perform a status
             # check and ignore other transcribe options.
-            result = wrapper.status_request(id=args.status_id)
+            result = wrapper.retrieve_status(id=args.status_id)
         else:
             result = wrapper.transcribe(
                 source=args.source,

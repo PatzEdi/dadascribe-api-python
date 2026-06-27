@@ -1,6 +1,6 @@
 
 from typing import Any, Optional
-
+from typing import Iterable
 
 from .request_utils import RequestUtils
 from .request_utils import BASE_API_URL
@@ -17,7 +17,7 @@ class ScribeAPIWrapper:
 
     def transcribe(
         self,
-        source: str,
+        source: str | Iterable[str],
         source_language: str,
         destination_language: str,
         diarization: Optional[str] = None,
@@ -25,35 +25,39 @@ class ScribeAPIWrapper:
         """Send a POST request to the Dadascribe /v1/transcribe
         endpoint and return the parsed response.
     
-        Raises requests.HTTPError on non-2xx responses.
+        Raises InvalidRequestError on failing requests.
         """
         url = BASE_API_URL + EndPoints.TRANSCRIBE
         payload = {
-            PayLoadKeys.SOURCE: source,
+            PayLoadKeys.SOURCE: list(source),
             PayLoadKeys.SOURCE_LANGUAGE: source_language,
             PayLoadKeys.DEST_LANGUAGE: destination_language,
         }
         if diarization is not None:
             payload[PayLoadKeys.DIARIZATION] = diarization
     
-        return self._request_utils.exec_request(
-            url,
-            headers=self._headers,
-            payload=payload,
-            timeout=self._req_timeout
-        )
+        return self._api_request(url, payload)    
     
-    
-    
-    def status_request(self, id: str) -> Any:
+
+    def retrieve_status(self, id: str) -> Any:
         """Send a POST request to the Dadascribe /v1/status endpoint
         and return the parsed response.
     
-        Raises requests.HTTPError on non-2xx responses.
+        Raises InvalidRequestError on failing requests.
         """
         url = BASE_API_URL + EndPoints.STATUS
         payload = {PayLoadKeys.ID: id}
     
+        return self._api_request(url, payload)
+
+
+    def _api_request(self, url: str, payload: dict) -> Any:
+        """Send a POST request to the given URL with the given payload
+        and return the parsed response. Higher level version of exec_request
+        found in RequestUtils.
+    
+        Raises InvalidRequestError on failing requests.
+        """
         return self._request_utils.exec_request(
             url,
             headers=self._headers,
