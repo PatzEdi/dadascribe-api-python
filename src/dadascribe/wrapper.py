@@ -7,7 +7,7 @@ from .request_utils import BASE_API_URL
 from .request_utils import EndPoints, PayLoadKeys
 
 
-class Wrapper:
+class ScribeAPIWrapper:
     def __init__(self, api_key: str, req_timeout: int = 60):
         self._request_utils = RequestUtils()
         self._api_key = api_key

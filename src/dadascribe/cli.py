@@ -5,7 +5,7 @@ import sys
 import json
 
 from .internal_globals import ENV_API_NAME
-from .wrapper import Wrapper
+from .wrapper import ScribeAPIWrapper
 
 
 def _check_api_key_presence(args) -> str:
@@ -65,7 +65,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def _handle_args(args: argparse.Namespace, api_key: str) -> None:
-    wrapper = Wrapper(api_key=api_key, req_timeout=args.timeout)
+    wrapper = ScribeAPIWrapper(api_key=api_key, req_timeout=args.timeout)
     try:
         if args.status_id:
             # If a status ID is provided, perform a status
