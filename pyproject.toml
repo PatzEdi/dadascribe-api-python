@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "DaDaScribeAPI-Python"
+version = "0.0.1"
+authors = [{ name = "DaDaScribe", email = "dadascribe@email.comail.com" }]
+description = "Python wrapper for the DaDaScribe API"
+readme = "README.md"
+keywords = ["transcriptions", "diarization", "whisper"]
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = ["requests"]
+
+[project.scripts]
+dadascribe = "dadascribe.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dadascribe"]
+
+[project.urls]
+"Homepage" = ""
+"Repository" = ""
+"Bug Tracker" = ""
