@@ -4,7 +4,24 @@ import requests
 import sys
 import json
 
+from enum import StrEnum
+
 BASE_API_URL: str = "https://api.dadascribe.com/v1/"
+
+class EndPoints(StrEnum):
+    """Common endpoint names for the API."""
+    STATUS = "status"
+    TRANSCRIBE = "transcribe"
+
+
+class PayLoadKeys(StrEnum):
+    """Common payload keys for the API."""
+    ID = "id"
+    SOURCE = "source"
+    SOURCE_LANGUAGE = "source-language"
+    DEST_LANGUAGE = "destination-language"
+    DIARIZATION = "diarization"
+    
 
 class RequestUtils:
     

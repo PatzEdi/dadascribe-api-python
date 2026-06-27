@@ -4,6 +4,7 @@ from typing import Any, Optional
 
 from .request_utils import RequestUtils
 from .request_utils import BASE_API_URL
+from .request_utils import EndPoints, PayLoadKeys
 
 
 class Wrapper:
@@ -11,7 +12,6 @@ class Wrapper:
         self._request_utils = RequestUtils()
         self._api_key = api_key
         self._req_timeout = req_timeout
-
         # Other:
         self._headers = self._request_utils.construct_headers(self._api_key)
 
@@ -27,14 +27,14 @@ class Wrapper:
     
         Raises requests.HTTPError on non-2xx responses.
         """
-        url = BASE_API_URL + "transcribe"
+        url = BASE_API_URL + EndPoints.TRANSCRIBE
         payload = {
-            "source": source,
-            "source-language": source_language,
-            "destination-language": destination_language,
+            PayLoadKeys.SOURCE: source,
+            PayLoadKeys.SOURCE_LANGUAGE: source_language,
+            PayLoadKeys.DEST_LANGUAGE: destination_language,
         }
         if diarization is not None:
-            payload["diarization"] = diarization
+            payload[PayLoadKeys.DIARIZATION] = diarization
     
         return self._request_utils.exec_request(
             url,
@@ -46,12 +46,13 @@ class Wrapper:
     
     
     def status_request(self, id: str) -> Any:
-        """Send a POST request to the Dadascribe /v1/status endpoint and return the parsed response.
+        """Send a POST request to the Dadascribe /v1/status endpoint
+        and return the parsed response.
     
         Raises requests.HTTPError on non-2xx responses.
         """
-        url = BASE_API_URL + "status"
-        payload = {"id": id}
+        url = BASE_API_URL + EndPoints.STATUS
+        payload = {PayLoadKeys.ID: id}
     
         return self._request_utils.exec_request(
             url,
