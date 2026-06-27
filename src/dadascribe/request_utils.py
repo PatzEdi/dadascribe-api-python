@@ -1,8 +1,6 @@
 
 # Stores global constants & utils related to requests.
 import requests
-import sys
-import json
 
 from enum import StrEnum
 
@@ -21,7 +19,36 @@ class PayLoadKeys(StrEnum):
     SOURCE_LANGUAGE = "source-language"
     DEST_LANGUAGE = "destination-language"
     DIARIZATION = "diarization"
+
+
+def _extract_response_content(resp: requests.Response) -> str:
+    """Helper to extract the response content as JSON or raw text."""
+    try:
+        return resp.json()
+    except ValueError:
+        return resp.text
+
+
+class InternalRequestError(Exception):
+    def __init__(self, response: requests.Response):
+        self._response = response
+        self._message = f"Request failed: {response.status_code} " \
+                    f"{response.reason}"
+
+        super().__init__(self.message)
+
+    @property
+    def response(self) -> requests.Response:
+        return self._response
     
+    @property
+    def message(self) -> str:
+        return self._message
+
+    @property
+    def resp_body(self) -> str:
+        return _extract_response_content(self._response)
+
 
 class RequestUtils:
     
@@ -34,29 +61,18 @@ class RequestUtils:
     ) -> str | None:
         """Executes a POST request to the given URL with the given headers and
         payload, and returns the response as JSON or raw text."""
-        resp = requests.post(url, headers=headers, json=payload, timeout=timeout)
+        resp = requests.post(
+            url,
+            headers=headers,
+            json=payload, timeout=timeout
+        )
         try:
             resp.raise_for_status()
         except requests.HTTPError:
-            # Print details for easier debugging, then re-raise
-            print(
-                f"Request failed: {resp.status_code} {resp.reason}",
-                file=sys.stderr,
-            )
-            try:
-                print(
-                    json.dumps(resp.json(), indent=2, ensure_ascii=False),
-                    file=sys.stderr,
-                )
-            except ValueError:
-                print(resp.text, file=sys.stderr)
-            raise
+            raise InternalRequestError(resp)
     
         # Return JSON if possible, otherwise raw text
-        try:
-            return resp.json()
-        except ValueError:
-            return resp.text
+        return _extract_response_content(resp)
 
 
     def construct_headers(self, api_key: str) -> dict:

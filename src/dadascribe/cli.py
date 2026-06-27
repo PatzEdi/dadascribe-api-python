@@ -6,6 +6,7 @@ import json
 
 from .internal_globals import ENV_API_NAME
 from .wrapper import ScribeAPIWrapper
+from .request_utils import InternalRequestError
 
 
 def _check_api_key_presence(args) -> str:
@@ -78,8 +79,8 @@ def _handle_args(args: argparse.Namespace, api_key: str) -> None:
                 destination_language=args.destination_language,
                 diarization=args.diarization,
             )
-    except Exception as e:
-        print(f"Error during request: {e}", file=sys.stderr)
+    except InternalRequestError as e:
+        print(f"Error during request: {e.resp_body}", file=sys.stderr)
         sys.exit(1)
 
     if args.output:
