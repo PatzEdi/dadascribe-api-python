@@ -1,13 +1,11 @@
 
-
 import argparse
 import os
 import sys
 import json
 
-
 from .internal_globals import ENV_API_NAME
-from .wrapper import transcribe, status_request
+from .wrapper import Wrapper
 
 
 def _check_api_key_presence(args) -> str:
@@ -67,16 +65,16 @@ def parse_args() -> argparse.Namespace:
 
 
 def _handle_args(args: argparse.Namespace, api_key: str) -> None:
+    wrapper = Wrapper(api_key=api_key)
     try:
         if args.status_id:
             # If a status ID is provided, perform a status
             # check and ignore other transcribe options.
-            result = status_request(
-                api_key=api_key, id=args.status_id, timeout=args.timeout
+            result = wrapper.status_request(
+                id=args.status_id, timeout=args.timeout
             )
         else:
-            result = transcribe(
-                api_key=api_key,
+            result = wrapper.transcribe(
                 source=args.source,
                 source_language=args.source_language,
                 destination_language=args.destination_language,
