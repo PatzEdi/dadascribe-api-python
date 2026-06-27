@@ -3,12 +3,17 @@ from typing import Any, Optional
 
 
 from .request_utils import RequestUtils
+from .request_utils import BASE_API_URL
 
 
 class Wrapper:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, req_timeout: int = 60):
         self._request_utils = RequestUtils()
         self._api_key = api_key
+        self._req_timeout = req_timeout
+
+        # Other:
+        self._headers = self._request_utils.construct_headers(self._api_key)
 
     def transcribe(
         self,
@@ -16,17 +21,13 @@ class Wrapper:
         source_language: str,
         destination_language: str,
         diarization: Optional[str] = None,
-        timeout: int = 60,
     ) -> Any:
-        """Send a POST request to the Dadascribe /v1/transcribe endpoint and return the parsed response.
+        """Send a POST request to the Dadascribe /v1/transcribe
+        endpoint and return the parsed response.
     
         Raises requests.HTTPError on non-2xx responses.
         """
-        url = "https://api.dadascribe.com/v1/transcribe"
-        headers = {
-            "Authorization": f"Bearer {self._api_key}",
-            "Content-Type": "application/json",
-        }
+        url = BASE_API_URL + "transcribe"
         payload = {
             "source": source,
             "source-language": source_language,
@@ -35,23 +36,26 @@ class Wrapper:
         if diarization is not None:
             payload["diarization"] = diarization
     
-        return self._request_utils.exec_request(url, headers=headers, payload=payload, timeout=timeout)
+        return self._request_utils.exec_request(
+            url,
+            headers=self._headers,
+            payload=payload,
+            timeout=self._req_timeout
+        )
     
     
     
-    def status_request(self, id: str, timeout: int = 60) -> Any:
-        """Send a POST request to the Dadascribe /v1/status endpoint with a job ID and return the parsed response.
+    def status_request(self, id: str) -> Any:
+        """Send a POST request to the Dadascribe /v1/status endpoint and return the parsed response.
     
-        Mirrors:
-        curl -sS -X POST 'https://api.dadascribe.com/v1/status' \
-        -H 'Authorization: Bearer YOUR_API_KEY' \
-        -H 'Content-Type: application/json' \
-        -d '{ "id": "a1B2c3D4e5F6g7H8" }'
+        Raises requests.HTTPError on non-2xx responses.
         """
-        url = "https://api.dadascribe.com/v1/status"
-        headers = {
-            "Authorization": f"Bearer {self._api_key}",
-            "Content-Type": "application/json",
-        }
+        url = BASE_API_URL + "status"
         payload = {"id": id}
-        return self._request_utils.exec_request(url, headers=headers, payload=payload, timeout=timeout)
+    
+        return self._request_utils.exec_request(
+            url,
+            headers=self._headers,
+            payload=payload,
+            timeout=self._req_timeout
+        )

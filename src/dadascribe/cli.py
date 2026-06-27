@@ -65,21 +65,18 @@ def parse_args() -> argparse.Namespace:
 
 
 def _handle_args(args: argparse.Namespace, api_key: str) -> None:
-    wrapper = Wrapper(api_key=api_key)
+    wrapper = Wrapper(api_key=api_key, req_timeout=args.timeout)
     try:
         if args.status_id:
             # If a status ID is provided, perform a status
             # check and ignore other transcribe options.
-            result = wrapper.status_request(
-                id=args.status_id, timeout=args.timeout
-            )
+            result = wrapper.status_request(id=args.status_id)
         else:
             result = wrapper.transcribe(
                 source=args.source,
                 source_language=args.source_language,
                 destination_language=args.destination_language,
                 diarization=args.diarization,
-                timeout=args.timeout,
             )
     except Exception as e:
         print(f"Error during request: {e}", file=sys.stderr)

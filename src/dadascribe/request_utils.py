@@ -1,8 +1,10 @@
 
+# Stores global constants & utils related to requests.
 import requests
 import sys
 import json
 
+BASE_API_URL: str = "https://api.dadascribe.com/v1/"
 
 class RequestUtils:
     
@@ -38,3 +40,11 @@ class RequestUtils:
             return resp.json()
         except ValueError:
             return resp.text
+
+
+    def construct_headers(self, api_key: str) -> dict:
+        """Contructs a commonly used headers dict with the given API key."""
+        return {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
