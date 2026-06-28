@@ -52,8 +52,9 @@ def parse_args() -> argparse.Namespace:
         "--timeout", type=int, default=60, help="Request timeout in seconds."
     )
     p.add_argument(
-        "--output",
-        help="File to save JSON response (optional). If omitted, prints to stdout.",
+        "--dump-response",
+        help="File to save JSON response (optional). "
+            "If omitted, prints to stdout.",
     )
 
     p.add_argument(
@@ -107,10 +108,10 @@ def _handle_args(args: argparse.Namespace, api_key: str) -> None:
 
         sys.exit(1)
 
-    if args.output:
-        with open(args.output, "w", encoding="utf-8") as f:
+    if args.dump_response:
+        with open(args.dump_response, "w", encoding="utf-8") as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
-        print(f"Saved response to {args.output}")
+        print(f"Saved response to {args.dump_response}")
     else:
         # Pretty-print JSON or text
         if isinstance(result, (dict, list)):

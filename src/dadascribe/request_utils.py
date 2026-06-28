@@ -45,6 +45,9 @@ def extract_response_content(resp: requests.Response) -> str:
 
 
 class InternalRequestError(Exception):
+    """Raised when a request fails with a non-200 status code.
+    Contains the response object for debugging and other useful
+    information about the failure."""
     def __init__(self, response: requests.Response):
         self._response = response
         self._message = f"Request failed: {response.status_code} " \
@@ -66,7 +69,8 @@ class InternalRequestError(Exception):
 
 
 class RequestUtils:
-    
+    """Utility class for making HTTP requests,
+    handling common request logic."""
     def exec_request(
         self,
         url: str,
@@ -75,8 +79,8 @@ class RequestUtils:
         timeout: int = 0,
         get: bool = False
     ) -> str | None:
-        """Executes a POST request to the given URL with the given headers and
-        payload, and returns the response as JSON or raw text."""
+        """Executes a POST/GET request to the given URL with the given headers
+        and payload, and returns the response as JSON or raw text."""
         req_fn = requests.get if get else requests.post
         resp = req_fn(
             url,

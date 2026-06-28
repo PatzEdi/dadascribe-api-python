@@ -66,15 +66,18 @@ class ScribeAPIWrapper:
         id: str,
         output_dir: str | PathLike,
     ) -> None:
-        """Download the transcription output for the given job ID to the specified directory.
-        If no directory is specified, saves to the current directory.
+        """Download the transcription output for the given job ID
+        to the specified directory. If no directory is specified,
+        saves to the current directory.
         """
         if not os.path.exists(output_dir):
-            raise DownloadError(f"Output directory {output_dir} does not exist.")
+            raise DownloadError(f"Output directory \"{output_dir}\" "
+                "does not exist.")
         
         status_info = self.retrieve_status(id)
         if status_info[ResponseKeys.STATUS] != Status.COMPLETE:
-            raise DownloadError("Job is not completed yet. Cannot download output.")
+            raise DownloadError("Job is not completed yet. "
+                "Cannot download output.")
 
         for file_url in status_info.get(ResponseKeys.URLS, []):
             file_name = os.path.basename(file_url)
