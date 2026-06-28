@@ -40,12 +40,12 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--destination-language",
-        default="it,fr",
+        default="",
         help="Comma-separated destination languages (e.g. 'it,fr').",
     )
     p.add_argument(
         "--diarization",
-        default="Alice,Bob",
+        default="",
         help="Comma-separated diarization labels (e.g. 'Alice,Bob').",
     )
     p.add_argument(
