@@ -21,7 +21,7 @@ class PayLoadKeys(StrEnum):
     DIARIZATION = "diarization"
 
 
-def _extract_response_content(resp: requests.Response) -> str:
+def extract_response_content(resp: requests.Response) -> str:
     """Helper to extract the response content as JSON or raw text."""
     try:
         return resp.json()
@@ -47,7 +47,7 @@ class InternalRequestError(Exception):
 
     @property
     def resp_body(self) -> str:
-        return _extract_response_content(self._response)
+        return extract_response_content(self._response)
 
 
 class RequestUtils:
@@ -72,7 +72,7 @@ class RequestUtils:
             raise InternalRequestError(resp)
     
         # Return JSON if possible, otherwise raw text
-        return _extract_response_content(resp)
+        return extract_response_content(resp)
 
 
     def construct_headers(self, api_key: str) -> dict:
