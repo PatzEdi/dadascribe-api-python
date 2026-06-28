@@ -2,7 +2,8 @@ import unittest
 from unittest.mock import patch
 
 from src.dadascribe.request_utils import BASE_API_URL, EndPoints, PayLoadKeys
-from src.dadascribe.wrapper import ScribeAPIWrapper
+from src.dadascribe.request_utils import ResponseKeys, Status
+from src.dadascribe.wrapper import ScribeAPIWrapper, DownloadError
 
 
 class TestWrapper(unittest.TestCase):
@@ -85,6 +86,36 @@ class TestWrapper(unittest.TestCase):
             }
         )
 
+
+    @patch("os.path.exists")
+    def test_download_trsc_raises_err_when_output_dir_dne(self, mock_exists):
+        """When the output dir does not exist, should raise DownloadError."""
+        mock_exists.return_value = False
+        with self.assertRaises(DownloadError):
+            self._wrapper.download_transcription_output(
+                id="example_id",
+                output_dir="example_path"
+            )
+
+    @patch("os.path.exists")
+    @patch("src.dadascribe.wrapper.ScribeAPIWrapper.retrieve_status")
+    def test_download_trsc_raises_err_when_status_not_complete(
+        self,
+        mock_retrieve_status,
+        mock_exists
+    ):
+        """When the output dir does not exist, should raise DownloadError."""
+        mock_exists.return_value = True
+        mock_retrieve_status.return_value = {
+            ResponseKeys.STATUS:
+                Status.PROCESSING
+        }
+        with self.assertRaises(DownloadError):
+            self._wrapper.download_transcription_output(
+                id="example_id",
+                output_dir="example_path"
+            )
+        
 
 if __name__ == "__main__":
     unittest.main()
