@@ -58,8 +58,10 @@ class TestRequestUtils(unittest.TestCase):
     def test_exec_request_raises_internal_request_error_on_status_raised(self, mock_post):
         resp = mock_post.return_value
         resp.status_code = 500
-        with self.assertRaises(InternalRequestError):
+        resp.reason = "Bad Request"
+        with self.assertRaises(InternalRequestError) as context:
             self._request_utils.exec_request("https://dummy.url", {}, {})
+        self.assertEqual(str(context.exception), "Request failed: 500 Bad Request")
 
 
     @patch("requests.post", return_value=requests.Response())

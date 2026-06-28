@@ -21,7 +21,7 @@ class TestWrapper(unittest.TestCase):
         mock_api_request.assert_called_once()
         mock_api_request.assert_called_with(
             BASE_API_URL + EndPoints.TRANSCRIBE,
-            {
+            payload={
                 PayLoadKeys.SOURCE: "example_source_url",
                 PayLoadKeys.SOURCE_LANGUAGE: "en",
                 PayLoadKeys.DEST_LANGUAGE: "it",
@@ -39,7 +39,7 @@ class TestWrapper(unittest.TestCase):
         mock_api_request.assert_called_once()
         mock_api_request.assert_called_with(
             BASE_API_URL + EndPoints.TRANSCRIBE,
-            {
+            payload={
                 PayLoadKeys.SOURCE: "example_source_url",
                 PayLoadKeys.SOURCE_LANGUAGE: "en",
                 PayLoadKeys.DEST_LANGUAGE: "it",
@@ -58,7 +58,7 @@ class TestWrapper(unittest.TestCase):
         mock_api_request.assert_called_once()
         mock_api_request.assert_called_with(
             BASE_API_URL + EndPoints.TRANSCRIBE,
-            {
+            payload={
                 PayLoadKeys.SOURCE: ["example_source_url", "example_source_url2"],
                 PayLoadKeys.SOURCE_LANGUAGE: "en",
                 PayLoadKeys.DEST_LANGUAGE: "it",
@@ -77,9 +77,9 @@ class TestWrapper(unittest.TestCase):
         mock_api_request.assert_called_once()
         mock_api_request.assert_called_with(
             BASE_API_URL + EndPoints.STATUS,
-            {
+            payload={
                 PayLoadKeys.ID: "example_id",
-            },
+            }
         )
 
 

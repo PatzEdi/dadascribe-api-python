@@ -2,6 +2,8 @@
 # Stores global constants & utils related to requests.
 import requests
 
+from typing import Optional
+
 from enum import StrEnum
 
 BASE_API_URL: str = "https://api.dadascribe.com/v1/"
@@ -55,13 +57,15 @@ class RequestUtils:
     def exec_request(
         self,
         url: str,
-        headers: dict,
-        payload: dict,
-        timeout: int = 0
+        headers: Optional[dict],
+        payload: Optional[dict],
+        timeout: int = 0,
+        get: bool = False
     ) -> str | None:
         """Executes a POST request to the given URL with the given headers and
         payload, and returns the response as JSON or raw text."""
-        resp = requests.post(
+        req_fn = requests.get if get else requests.post
+        resp = req_fn(
             url,
             headers=headers,
             json=payload, timeout=timeout

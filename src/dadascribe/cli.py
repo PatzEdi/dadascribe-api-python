@@ -62,6 +62,20 @@ def parse_args() -> argparse.Namespace:
         "a1B2c3D4e5F6g7H8). If provided, transcribe will not run.",
     )
 
+    # For downloading transcription files:
+
+    p.add_argument(
+        "--download",
+        help="Download generated files given a job ID " \
+            "& an optional output dir path" \
+    )
+
+    p.add_argument(
+        "--download-output-dir",
+        help="Directory to save downloaded files (optional). " \
+            "If omitted, saves to current directory."
+    )
+    
     return p.parse_args()
 
 

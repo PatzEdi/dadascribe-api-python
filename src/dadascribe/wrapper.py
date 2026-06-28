@@ -5,6 +5,7 @@ from .request_utils import RequestUtils
 from .request_utils import BASE_API_URL
 from .request_utils import EndPoints, PayLoadKeys
 
+import os
 
 class ScribeAPIWrapper:
     def __init__(self, api_key: str, req_timeout: int = 60):
@@ -35,7 +36,7 @@ class ScribeAPIWrapper:
         if diarization is not None:
             payload[PayLoadKeys.DIARIZATION] = diarization
     
-        return self._api_request(url, payload)    
+        return self._api_request(url, payload=payload)    
     
 
     def retrieve_status(self, id: str) -> Any:
@@ -47,10 +48,35 @@ class ScribeAPIWrapper:
         url = BASE_API_URL + EndPoints.STATUS
         payload = {PayLoadKeys.ID: id}
     
-        return self._api_request(url, payload)
+        return self._api_request(url, payload=payload)
 
 
-    def _api_request(self, url: str, payload: dict) -> Any:
+    def download_transcription_output(
+        self,
+        id: str,
+        output_dir: str,
+    ) -> None:
+        """Download the transcription output for the given job ID to the specified directory.
+        If no directory is specified, saves to the current directory.
+        """
+        status_info = self.retrieve_status(id)
+        if status_info["status"] != "complete":
+            raise ValueError("Job is not completed yet. Cannot download output.")
+
+        for file_url in status_info.get("urls", []):
+            file_name = os.path.basename(file_url)
+            file_content = self._api_request(file_url, get=True)
+            with open(os.path.join(output_dir, file_name), "w") as f:
+                f.write(file_content)
+
+
+
+    def _api_request(
+        self,
+        url: str,
+        payload: Optional[dict] = None,
+        get: bool = False
+    ) -> Any:
         """Send a POST request to the given URL with the given payload
         and return the parsed response. Higher level version of exec_request
         found in RequestUtils.
@@ -61,5 +87,6 @@ class ScribeAPIWrapper:
             url,
             headers=self._headers,
             payload=payload,
-            timeout=self._req_timeout
+            timeout=self._req_timeout,
+            get=get
         )
