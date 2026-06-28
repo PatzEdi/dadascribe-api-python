@@ -1,11 +1,14 @@
 
+
+import os
+from os import PathLike
+
 from typing import Any, Optional
 
 from .request_utils import RequestUtils
 from .request_utils import BASE_API_URL
 from .request_utils import EndPoints, PayLoadKeys, ResponseKeys, Status
 
-import os
 
 class DownloadError(Exception):
     """Raised when download fails."""
@@ -61,11 +64,14 @@ class ScribeAPIWrapper:
     def download_transcription_output(
         self,
         id: str,
-        output_dir: str,
+        output_dir: str | PathLike,
     ) -> None:
         """Download the transcription output for the given job ID to the specified directory.
         If no directory is specified, saves to the current directory.
         """
+        if not os.path.exists(output_dir):
+            raise DownloadError(f"Output directory {output_dir} does not exist.")
+        
         status_info = self.retrieve_status(id)
         if status_info[ResponseKeys.STATUS] != Status.COMPLETE:
             raise DownloadError("Job is not completed yet. Cannot download output.")
