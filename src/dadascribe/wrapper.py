@@ -1,6 +1,5 @@
 
 from typing import Any, Optional
-from typing import Iterable
 
 from .request_utils import RequestUtils
 from .request_utils import BASE_API_URL
@@ -17,7 +16,7 @@ class ScribeAPIWrapper:
 
     def transcribe(
         self,
-        source: str | Iterable[str],
+        source: str | list[str],
         source_language: str,
         destination_language: str,
         diarization: Optional[str] = None,
@@ -29,7 +28,7 @@ class ScribeAPIWrapper:
         """
         url = BASE_API_URL + EndPoints.TRANSCRIBE
         payload = {
-            PayLoadKeys.SOURCE: list(source),
+            PayLoadKeys.SOURCE: source,
             PayLoadKeys.SOURCE_LANGUAGE: source_language,
             PayLoadKeys.DEST_LANGUAGE: destination_language,
         }
