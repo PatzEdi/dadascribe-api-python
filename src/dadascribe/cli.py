@@ -5,7 +5,7 @@ import sys
 import json
 
 from .internal_globals import ENV_API_NAME
-from .wrapper import ScribeAPIWrapper
+from .wrapper import ScribeAPIWrapper, DownloadError
 from .request_utils import InternalRequestError
 
 
@@ -72,6 +72,7 @@ def parse_args() -> argparse.Namespace:
 
     p.add_argument(
         "--download-output-dir",
+        default=None,
         help="Directory to save downloaded files (optional). " \
             "If omitted, saves to current directory."
     )
@@ -86,6 +87,11 @@ def _handle_args(args: argparse.Namespace, api_key: str) -> None:
             # If a status ID is provided, perform a status
             # check and ignore other transcribe options.
             result = wrapper.retrieve_status(id=args.status_id)
+        elif args.download:
+            result = wrapper.download_transcription_output(
+                id=args.download,
+                output_dir=args.download_output_dir or os.getcwd(),
+            )
         else:
             result = wrapper.transcribe(
                 source=args.source,
@@ -93,8 +99,12 @@ def _handle_args(args: argparse.Namespace, api_key: str) -> None:
                 destination_language=args.destination_language,
                 diarization=args.diarization,
             )
-    except InternalRequestError as e:
-        print(f"Error during request: {e.resp_body}", file=sys.stderr)
+    except (InternalRequestError, DownloadError) as e:
+        if isinstance(e, DownloadError):
+            print(f"Error: {e.message}", file=sys.stderr)
+        elif isinstance(e, InternalRequestError):
+            print(f"Error during request: {e.resp_body}", file=sys.stderr)
+
         sys.exit(1)
 
     if args.output:
@@ -105,7 +115,7 @@ def _handle_args(args: argparse.Namespace, api_key: str) -> None:
         # Pretty-print JSON or text
         if isinstance(result, (dict, list)):
             print(json.dumps(result, ensure_ascii=False, indent=2))
-        else:
+        elif result is not None:
             print(result)
 
 

@@ -23,6 +23,19 @@ class PayLoadKeys(StrEnum):
     DIARIZATION = "diarization"
 
 
+class ResponseKeys(StrEnum):
+    """Common response keys for the API."""
+    STATUS = "status"
+    URLS = "urls"
+
+
+class Status(StrEnum):
+    """Common status values for the API."""
+    COMPLETE = "complete"
+    PROCESSING = "processing"
+    ERROR = "error"
+
+
 def extract_response_content(resp: requests.Response) -> str:
     """Helper to extract the response content as JSON or raw text."""
     try:
