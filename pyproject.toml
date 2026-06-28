@@ -3,13 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "DaDaScribeAPI-Python"
+name = "DaDaScribe-Python"
 version = "0.0.1"
-authors = [{ name = "DaDaScribe", email = "dadascribe@email.comail.com" }]
+authors = [
+    { name = "PatzEdi", email = "patzedigithub@gmail.com" },
+    { name = "Fabrizio Ferrari", email = "fabrizio@gmail.com" }
+]
 description = "Python wrapper for the DaDaScribe API"
 readme = "README.md"
 keywords = ["transcriptions", "diarization", "whisper"]
-requires-python = ">=3.9"
+requires-python = ">=3.13"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
