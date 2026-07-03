@@ -2,10 +2,12 @@ import unittest
 from unittest.mock import patch
 
 import requests
+from src.dadascribe.request_utils import (
+    InternalRequestError,
+    RequestUtils,
+    extract_response_content,
+)
 
-from src.dadascribe.request_utils import extract_response_content
-from src.dadascribe.request_utils import RequestUtils
-from src.dadascribe.request_utils import InternalRequestError
 
 class TestRequestUtils(unittest.TestCase):
     def setUp(self):
@@ -25,11 +27,10 @@ class TestRequestUtils(unittest.TestCase):
         self.assertEqual(result, ["response", "content", "as", "list"])
 
         # Now with a string:
-        resp._content = b'response as a string'
+        resp._content = b"response as a string"
         result = extract_response_content(resp)
         self.assertIsInstance(result, str)
         self.assertEqual(result, "response as a string")
-
 
     def test_construct_headers(self):
         """Makes sure that the headers we construct
@@ -37,11 +38,12 @@ class TestRequestUtils(unittest.TestCase):
         that we want to change this header format in the code."""
         headers = self._request_utils.construct_headers("dummy_api_key")
         self.assertIsInstance(headers, dict)
-        self.assertEqual(headers,
+        self.assertEqual(
+            headers,
             {
                 "Authorization": "Bearer dummy_api_key",
                 "Content-Type": "application/json",
-            }
+            },
         )
 
     @patch("requests.post", return_value=requests.Response())
@@ -51,27 +53,36 @@ class TestRequestUtils(unittest.TestCase):
         resp.status_code = 200
         self._request_utils.exec_request("https://dummy.url", {}, {})
         mock_post.assert_called_once()
-        mock_post.assert_called_with("https://dummy.url", headers={}, json={}, timeout=0)
-
+        mock_post.assert_called_with(
+            "https://dummy.url", headers={}, json={}, timeout=0
+        )
 
     @patch("requests.post", return_value=requests.Response())
-    def test_exec_request_raises_internal_request_error_on_status_raised(self, mock_post):
+    def test_exec_request_raises_internal_request_error_on_status_raised(
+        self, mock_post
+    ):
         resp = mock_post.return_value
         resp.status_code = 500
         resp.reason = "Bad Request"
         with self.assertRaises(InternalRequestError) as context:
             self._request_utils.exec_request("https://dummy.url", {}, {})
-        self.assertEqual(str(context.exception), "Request failed: 500 Bad Request")
-
+        self.assertEqual(
+            str(context.exception), "Request failed: 500 Bad Request"
+        )
 
     @patch("requests.post", return_value=requests.Response())
-    def test_exec_request_returns_formatted_extraction_content_output(self, mock_post):
+    def test_exec_request_returns_formatted_extraction_content_output(
+        self, mock_post
+    ):
         resp = mock_post.return_value
         resp._content = b'["response", "content", "as", "list"]'
         resp.status_code = 200
         result = self._request_utils.exec_request("https://dummy.url", {}, {})
         self.assertIsInstance(result, list)
         self.assertEqual(result, ["response", "content", "as", "list"])
+
+    def test_is_link(self):
+        pass
 
 
 if __name__ == "__main__":

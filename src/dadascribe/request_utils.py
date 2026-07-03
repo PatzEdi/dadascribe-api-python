@@ -1,21 +1,27 @@
-
 # Stores global constants & utils related to requests.
-import requests
-
-from typing import Optional
-
 from enum import StrEnum
+from io import BufferedReader
+from typing import Optional, Any
+from urllib.parse import urlparse
+from pathlib import Path
+from os import PathLike
+
+import requests
+import json
 
 BASE_API_URL: str = "https://api.dadascribe.com/v1/"
 
+
 class EndPoints(StrEnum):
     """Common endpoint names for the API."""
+
     STATUS = "status"
     TRANSCRIBE = "transcribe"
 
 
 class PayLoadKeys(StrEnum):
     """Common payload keys for the API."""
+
     ID = "id"
     SOURCE = "source"
     SOURCE_LANGUAGE = "source-language"
@@ -25,12 +31,14 @@ class PayLoadKeys(StrEnum):
 
 class ResponseKeys(StrEnum):
     """Common response keys for the API."""
+
     STATUS = "status"
     URLS = "urls"
 
 
 class Status(StrEnum):
     """Common status values for the API."""
+
     COMPLETE = "complete"
     PROCESSING = "processing"
     ERROR = "error"
@@ -48,17 +56,19 @@ class InternalRequestError(Exception):
     """Raised when a request fails with a non-200 status code.
     Contains the response object for debugging and other useful
     information about the failure."""
+
     def __init__(self, response: requests.Response):
         self._response = response
-        self._message = f"Request failed: {response.status_code} " \
-                    f"{response.reason}"
+        self._message = (
+            f"Request failed: {response.status_code} {response.reason}"
+        )
 
         super().__init__(self.message)
 
     @property
     def response(self) -> requests.Response:
         return self._response
-    
+
     @property
     def message(self) -> str:
         return self._message
@@ -71,34 +81,81 @@ class InternalRequestError(Exception):
 class RequestUtils:
     """Utility class for making HTTP requests,
     handling common request logic."""
+
     def exec_request(
         self,
+        api_key: str,
         url: str,
-        headers: Optional[dict],
         payload: Optional[dict],
         timeout: int = 0,
-        get: bool = False
+        get: bool = False,
+        file: Optional[PathLike] = None
     ) -> str | None:
         """Executes a POST/GET request to the given URL with the given headers
         and payload, and returns the response as JSON or raw text."""
         req_fn = requests.get if get else requests.post
-        resp = req_fn(
-            url,
-            headers=headers,
-            json=payload, timeout=timeout
-        )
+        if file is not None:
+            headers = self.construct_headers(api_key, include_content=False)
+            payload, file_obj = self._construct_file_payload(file, payload)
+            resp = req_fn(
+                url,
+                headers=headers,
+                files=payload, timeout=timeout
+            )
+            file_obj.close()
+        else:
+            headers = self.construct_headers(api_key)
+            resp = req_fn(
+                url,
+                headers=headers,
+                json=payload, timeout=timeout
+            )
+
         try:
             resp.raise_for_status()
         except requests.HTTPError:
             raise InternalRequestError(resp)
-    
+
         # Return JSON if possible, otherwise raw text
         return extract_response_content(resp)
 
 
-    def construct_headers(self, api_key: str) -> dict:
+    def construct_headers(
+        self,
+        api_key: str,
+        include_content: bool = True
+    ) -> dict:
         """Contructs a commonly used headers dict with the given API key."""
-        return {
+        headers = {
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
         }
+        if include_content:
+            headers["Content-Type"] = "application/json"
+        return headers
+
+    def is_link(self, object: Any) -> bool:
+        """Returns whether a given string is a link or not."""
+        try:
+            stringed = str(object)
+            result = urlparse(stringed)
+            return all([result.scheme, result.netloc])
+        except ValueError:
+            return False
+
+
+    def _construct_file_payload(
+        self,
+        file: PathLike,
+        params: Optional[dict] = None
+    ) -> tuple[dict, BufferedReader]:
+        """Constructs a file payload dict from the given file path."""
+        file = Path(file)
+        if not file.is_file() or not file.exists():
+            raise ValueError(f"File not found or is not a file: {file}")
+            
+        file_obj = open(file, "rb")
+        file_payload = {
+            "file": (file.name, file_obj),
+            "data": (None, json.dumps(params or {}), "application/json"),
+        }
+        return file_payload, file_obj
