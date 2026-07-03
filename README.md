@@ -8,7 +8,7 @@ The official DaDaScribe API wrapper in Python.
 The wrapper offers a CLI interface.
 
 To start a job, for example:
-```{bash}
+```bash
 $ dadascribe --source "link/to/youtube/or/path/to/file"
 {
   "status": "ok",
@@ -18,19 +18,19 @@ $ dadascribe --source "link/to/youtube/or/path/to/file"
 ```
 
 Check a job status:
-```{bash}
+```bash
 $ dadascribe --status a7wuTaPrebOqheE0
 ```
 
 Easily download results of a completed job:
-```{bash}
+```bash
 $ dadadascribe --download a7wuTaPrebOqheE0
 ```
 
 ## Python API
 The wrapper offers a Python API.
 
-```{python}
+```python
 from dadascribe import ScribeAPIWrapper
 api_key = ... # e.g. from an environment variable, as str
 w = ScribeAPIWrapper(api_key)
@@ -45,12 +45,12 @@ trsc_result = w.transcribe(
 
 
 ## Development
-```{bash}
+```bash
 pip3 install -e .
 ```
 
 Make sure to run the tests as well via the run_tests.sh script:
-```{bash}
+```bash
 chmod +x run_tests.sh
 ./run_tests.sh
 ```
