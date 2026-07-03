@@ -78,6 +78,18 @@ class InternalRequestError(Exception):
         return extract_response_content(self._response)
 
 
+class InvalidFileError(Exception):
+    """Raised when an inputted file is not valid."""
+
+    def __init__(self, message: str):
+        self._message = message
+        super().__init__(self._message)
+
+    @property
+    def message(self) -> str:
+        return self._message
+
+
 class RequestUtils:
     """Utility class for making HTTP requests,
     handling common request logic."""
@@ -89,14 +101,14 @@ class RequestUtils:
         payload: Optional[dict],
         timeout: int = 0,
         get: bool = False,
-        file: Optional[PathLike] = None
+        file: Optional[PathLike] | Optional[str] = None
     ) -> str | None:
         """Executes a POST/GET request to the given URL with the given headers
         and payload, and returns the response as JSON or raw text."""
         req_fn = requests.get if get else requests.post
         if file is not None:
             headers = self.construct_headers(api_key, include_content=False)
-            payload, file_obj = self._construct_file_payload(file, payload)
+            payload, file_obj = self.construct_file_payload(file, payload)
             resp = req_fn(
                 url,
                 headers=headers,
@@ -143,15 +155,15 @@ class RequestUtils:
             return False
 
 
-    def _construct_file_payload(
+    def construct_file_payload(
         self,
-        file: PathLike,
+        file: PathLike | str,
         params: Optional[dict] = None
     ) -> tuple[dict, BufferedReader]:
         """Constructs a file payload dict from the given file path."""
         file = Path(file)
-        if not file.is_file() or not file.exists():
-            raise ValueError(f"File not found or is not a file: {file}")
+        if not file.is_file():
+            raise InvalidFileError(f"File not found or is not a file: {file}")
             
         file_obj = open(file, "rb")
         file_payload = {

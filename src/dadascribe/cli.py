@@ -6,7 +6,7 @@ import json
 
 from .internal_globals import ENV_API_NAME
 from .wrapper import ScribeAPIWrapper, DownloadError
-from .request_utils import InternalRequestError
+from .request_utils import InternalRequestError, InvalidFileError
 
 
 def _check_api_key_presence(args) -> str:
@@ -33,7 +33,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--source",
         default="https://www.youtube.com/watch?v=VIDEO_ID",
-        help="Source media URL (e.g. YouTube link).",
+        help="Source media URL (e.g. YouTube link) OR file path.",
     )
     p.add_argument(
         "--source-language", default="en", help="Source language (e.g. 'en')."
@@ -100,8 +100,8 @@ def _handle_args(args: argparse.Namespace, api_key: str) -> None:
                 destination_language=args.destination_language,
                 diarization=args.diarization,
             )
-    except (InternalRequestError, DownloadError) as e:
-        if isinstance(e, DownloadError):
+    except (InternalRequestError, InvalidFileError, DownloadError) as e:
+        if isinstance(e, DownloadError) or isinstance(e, InvalidFileError):
             print(f"Error: {e.message}", file=sys.stderr)
         elif isinstance(e, InternalRequestError):
             print(f"Error during request: {e.resp_body}", file=sys.stderr)

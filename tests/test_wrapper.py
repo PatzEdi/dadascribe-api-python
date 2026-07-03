@@ -1,6 +1,4 @@
 import unittest
-from unittest.mock import patch
-import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
 from src.dadascribe.request_utils import (
@@ -34,11 +32,12 @@ class TestWrapper(unittest.TestCase):
                 PayLoadKeys.DEST_LANGUAGE: "it",
                 PayLoadKeys.SOURCE: "https://example_source_url.com",
             },
-            file=None
+            file=None,
         )
 
         mock_api_request.reset_mock()
         # Make sure it works out with diarization as well:
+        # Note: "example_source_url" without a protocol is treated as a file
         self._wrapper.transcribe(
             source="example_source_url",
             source_language="en",
@@ -49,11 +48,11 @@ class TestWrapper(unittest.TestCase):
         mock_api_request.assert_called_with(
             BASE_API_URL + EndPoints.TRANSCRIBE,
             payload={
-                PayLoadKeys.SOURCE: "example_source_url",
                 PayLoadKeys.SOURCE_LANGUAGE: "en",
                 PayLoadKeys.DEST_LANGUAGE: "it",
                 PayLoadKeys.DIARIZATION: "speaker1,speaker2",
             },
+            file="example_source_url",
         )
 
         # As a list for the source:
@@ -76,6 +75,88 @@ class TestWrapper(unittest.TestCase):
                 PayLoadKeys.DEST_LANGUAGE: "it",
                 PayLoadKeys.DIARIZATION: "speaker1,speaker2",
             },
+            file=None,
+        )
+
+    @patch("src.dadascribe.wrapper.ScribeAPIWrapper._api_request")
+    def test_transcribe_with_file_path(self, mock_api_request):
+        """Test that transcribe correctly handles file paths."""
+        # Test with a file path (no protocol scheme)
+        self._wrapper.transcribe(
+            source="/path/to/audio.mp3",
+            source_language="en",
+            destination_language="fr",
+        )
+        mock_api_request.assert_called_once()
+        mock_api_request.assert_called_with(
+            BASE_API_URL + EndPoints.TRANSCRIBE,
+            payload={
+                PayLoadKeys.SOURCE_LANGUAGE: "en",
+                PayLoadKeys.DEST_LANGUAGE: "fr",
+            },
+            file="/path/to/audio.mp3",
+        )
+
+    @patch("src.dadascribe.wrapper.ScribeAPIWrapper._api_request")
+    def test_transcribe_with_http_url(self, mock_api_request):
+        """Test that transcribe correctly handles HTTP URLs."""
+        self._wrapper.transcribe(
+            source="http://example.com/audio.mp3",
+            source_language="en",
+            destination_language="es",
+        )
+        mock_api_request.assert_called_once()
+        mock_api_request.assert_called_with(
+            BASE_API_URL + EndPoints.TRANSCRIBE,
+            payload={
+                PayLoadKeys.SOURCE_LANGUAGE: "en",
+                PayLoadKeys.DEST_LANGUAGE: "es",
+                PayLoadKeys.SOURCE: "http://example.com/audio.mp3",
+            },
+            file=None,
+        )
+
+    @patch("src.dadascribe.wrapper.ScribeAPIWrapper._api_request")
+    def test_transcribe_with_relative_file_path(self, mock_api_request):
+        """Test that transcribe correctly handles relative file paths."""
+        self._wrapper.transcribe(
+            source="audio_files/recording.wav",
+            source_language="de",
+            destination_language="en",
+        )
+        mock_api_request.assert_called_once()
+        mock_api_request.assert_called_with(
+            BASE_API_URL + EndPoints.TRANSCRIBE,
+            payload={
+                PayLoadKeys.SOURCE_LANGUAGE: "de",
+                PayLoadKeys.DEST_LANGUAGE: "en",
+            },
+            file="audio_files/recording.wav",
+        )
+
+    @patch("src.dadascribe.wrapper.ScribeAPIWrapper._api_request")
+    def test_transcribe_with_list_of_urls(self, mock_api_request):
+        """Test that transcribe handles a list of URLs correctly."""
+        self._wrapper.transcribe(
+            source=[
+                "https://example.com/audio1.mp3",
+                "https://example.com/audio2.mp3",
+            ],
+            source_language="en",
+            destination_language="es",
+        )
+        mock_api_request.assert_called_once()
+        mock_api_request.assert_called_with(
+            BASE_API_URL + EndPoints.TRANSCRIBE,
+            payload={
+                PayLoadKeys.SOURCE: [
+                    "https://example.com/audio1.mp3",
+                    "https://example.com/audio2.mp3",
+                ],
+                PayLoadKeys.SOURCE_LANGUAGE: "en",
+                PayLoadKeys.DEST_LANGUAGE: "es",
+            },
+            file=None,
         )
 
     @patch("src.dadascribe.wrapper.ScribeAPIWrapper._api_request")

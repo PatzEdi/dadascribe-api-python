@@ -26,7 +26,6 @@ class ScribeAPIWrapper:
         self._api_key = api_key
         self._req_timeout = req_timeout
 
-
     def transcribe(
         self,
         source: str | list[str] | PathLike,
@@ -47,8 +46,8 @@ class ScribeAPIWrapper:
         if diarization is not None:
             payload[PayLoadKeys.DIARIZATION] = diarization
         file_source = None
-        if self._request_utils.is_link(source):
-            print("Source detected as LINK.")
+        if isinstance(source, list) or self._request_utils.is_link(source):
+            print("Source detected as LINK or LIST of LINKS.")
             payload[PayLoadKeys.SOURCE] = source
         else:
             print("Source detected as FILE.")
@@ -56,8 +55,7 @@ class ScribeAPIWrapper:
             file_source = source
 
         return self._api_request(url, payload=payload, file=file_source)
-    
-    
+
     def retrieve_status(self, id: str) -> Any:
         """Send a POST request to the Dadascribe /v1/status endpoint
         and return the parsed response.
@@ -68,7 +66,6 @@ class ScribeAPIWrapper:
         payload = {PayLoadKeys.ID: id}
 
         return self._api_request(url, payload=payload)
-
 
     def download_transcription_output(
         self,
@@ -96,7 +93,6 @@ class ScribeAPIWrapper:
             with open(os.path.join(output_dir, file_name), "w") as f:
                 f.write(file_content)
 
-
     def _api_request(
         self,
         url: str,
@@ -116,5 +112,5 @@ class ScribeAPIWrapper:
             payload=payload,
             timeout=self._req_timeout,
             get=get,
-            file=file
+            file=file,
         )
