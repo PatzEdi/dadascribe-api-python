@@ -47,6 +47,19 @@ class TestRequestUtils(unittest.TestCase):
             },
         )
 
+        # Now excluding content type:
+        headers = self._request_utils.construct_headers(
+            "dummy_api_key",
+            include_content=False
+        )
+        self.assertIsInstance(headers, dict)
+        self.assertEqual(
+            headers,
+            {
+                "Authorization": "Bearer dummy_api_key"
+            },
+        )
+
     @patch("requests.post", return_value=requests.Response())
     def test_exec_request_calls_post_correctly(self, mock_post):
         resp = mock_post.return_value

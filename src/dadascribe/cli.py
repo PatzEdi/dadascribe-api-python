@@ -58,7 +58,7 @@ def parse_args() -> argparse.Namespace:
     )
 
     p.add_argument(
-        "--status-id",
+        "--status",
         help="Check status for a previously submitted job ID (e.g. " \
         "a1B2c3D4e5F6g7H8). If provided, transcribe will not run.",
     )
@@ -77,6 +77,9 @@ def parse_args() -> argparse.Namespace:
         help="Directory to save downloaded files (optional). " \
             "If omitted, saves to current directory."
     )
+    if len(sys.argv) == 1:
+        p.print_help(sys.stderr)
+        sys.exit(1)
     
     return p.parse_args()
 
@@ -84,10 +87,10 @@ def parse_args() -> argparse.Namespace:
 def _handle_args(args: argparse.Namespace, api_key: str) -> None:
     wrapper = ScribeAPIWrapper(api_key=api_key, req_timeout=args.timeout)
     try:
-        if args.status_id:
+        if args.status:
             # If a status ID is provided, perform a status
             # check and ignore other transcribe options.
-            result = wrapper.retrieve_status(id=args.status_id)
+            result = wrapper.retrieve_status(id=args.status)
         elif args.download:
             result = wrapper.download_transcription_output(
                 id=args.download,
